@@ -17,6 +17,15 @@ import { router as financeiroRouter } from "./routes/financeiro.js";
 import { router as relatoriosRouter } from "./routes/relatorios.js";
 import { router as logRouter } from "./routes/log.js";
 import { router as usuariosRouter } from "./routes/usuarios.js";
+import { db } from "./db.js";
+
+// Primeiro boot num banco vazio (ex.: volume novo no Railway) — popula
+// automaticamente com os dados de demonstração. Nunca roda se já houver
+// usuários cadastrados, então não apaga dados reais em restarts/deploys.
+if (db.prepare("SELECT COUNT(*) n FROM usuarios").get().n === 0) {
+  console.log("Banco vazio — populando com dados de demonstração...");
+  await import("./seed.js");
+}
 
 const app = express();
 app.use(cors());
