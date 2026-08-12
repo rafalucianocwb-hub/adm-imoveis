@@ -17,6 +17,7 @@ import { router as financeiroRouter } from "./routes/financeiro.js";
 import { router as relatoriosRouter } from "./routes/relatorios.js";
 import { router as logRouter } from "./routes/log.js";
 import { router as usuariosRouter } from "./routes/usuarios.js";
+import { router as adminRouter } from "./routes/admin.js";
 import { db } from "./db.js";
 
 // Primeiro boot num banco vazio (ex.: volume novo no Railway) — popula
@@ -43,6 +44,7 @@ app.use("/api/financeiro", financeiroRouter);
 app.use("/api/relatorios", relatoriosRouter);
 app.use("/api/log", logRouter);
 app.use("/api/usuarios", usuariosRouter);
+app.use("/api/admin", adminRouter);
 
 // Em produção, o build do frontend (client/dist) é servido pelo próprio
 // Express, como um único serviço — não precisa de um servidor separado.

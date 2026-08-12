@@ -26,12 +26,14 @@ router.get("/", authRequired, (req, res) => {
     .prepare(`SELECT id, codigo, titulo, tipo, foto_url, acessos, propostas FROM imoveis ORDER BY acessos DESC LIMIT 4`)
     .all();
 
+  // Contagem cumulativa: negócios que já passaram por cada etapa (ou além dela).
+  const cumulativo = (...etapas) => negocios.filter((n) => etapas.includes(n.etapa)).length;
   const funilView = [
     { nome: "Leads gerados", n: siteLeads.reduce((a, b) => a + b, 0), cor: "#9A968A" },
-    { nome: "Contatos / Visitas", n: 240, cor: "#1FA7BD" },
-    { nome: "Propostas enviadas", n: 96, cor: "#D98A0B" },
-    { nome: "Em negociação", n: 38, cor: "#E3B000" },
-    { nome: "Vendas fechadas", n: negocios.filter((x) => x.etapa === "ganho").length, cor: "#2E9E5B" },
+    { nome: "Contatos / Visitas", n: cumulativo("contato", "visita", "proposta", "negoc", "doc", "assinado", "ganho"), cor: "#1FA7BD" },
+    { nome: "Propostas enviadas", n: cumulativo("proposta", "negoc", "doc", "assinado", "ganho"), cor: "#D98A0B" },
+    { nome: "Em negociação", n: cumulativo("negoc", "doc", "assinado", "ganho"), cor: "#E3B000" },
+    { nome: "Vendas fechadas", n: cumulativo("ganho"), cor: "#2E9E5B" },
   ];
 
   res.json({

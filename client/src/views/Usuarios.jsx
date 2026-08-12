@@ -63,6 +63,7 @@ export default function ViewUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [novo, setNovo] = useState(false);
   const [editar, setEditar] = useState(null);
+  const [zerando, setZerando] = useState(false);
 
   const load = () => api.usuarios().then(setUsuarios).catch(() => {});
   useEffect(() => { load(); }, []);
@@ -81,6 +82,12 @@ export default function ViewUsuarios() {
       return Promise.all([p1, p2]).then(([atualizado]) => { setUsuarios(us => us.map(x => x.id === editar.id ? atualizado : x)); setNovo(false); setEditar(null); refresh(); });
     }
     return api.addUsuario(body).then(u => { setUsuarios(us => [u, ...us]); setNovo(false); setEditar(null); refresh(); });
+  };
+
+  const zerarDados = () => {
+    if (!window.confirm('Isso apaga TODOS os imóveis, negócios, leads, clientes, contratos, campanhas, transações e o log — de forma definitiva. Seus usuários e logins não são afetados. Confirma?')) return;
+    setZerando(true);
+    api.zerarDados().then(() => { window.location.reload(); }).catch(e => { alert(e.message); setZerando(false); });
   };
 
   return React.createElement('div', null,
@@ -110,6 +117,13 @@ export default function ViewUsuarios() {
               React.createElement('button', { className: 'btn btn-ghost btn-sm', onClick: () => setEditar(u) }, 'Editar'),
               React.createElement('button', { className: 'btn btn-ghost btn-sm', onClick: () => toggleStatus(u) }, u.status === 'Ativo' ? 'Desativar' : 'Ativar')))))))
     ),
+
+    React.createElement('div', { className: 'card card-pad', style: { marginTop: 20, background: 'var(--bad-bg)', border: '1px solid #f0c4bd' } },
+      React.createElement('div', { className: 'between', style: { alignItems: 'flex-start' } },
+        React.createElement('div', null,
+          React.createElement('div', { style: { fontWeight: 700, fontSize: 14, color: 'var(--bad)', marginBottom: 4 } }, 'Zona de risco'),
+          React.createElement('div', { style: { fontSize: 12.5, color: 'var(--ink-2)', maxWidth: 520 } }, 'Apaga todos os imóveis, negócios, leads, clientes, contratos, campanhas, transações e o log de uma vez — use isso para sair dos dados de demonstração e começar a operação real. Usuários e logins não são afetados.')),
+        React.createElement('button', { className: 'btn btn-dark', style: { background: 'var(--bad)', flex: 'none' }, onClick: zerarDados, disabled: zerando }, React.createElement(Ic.x, {}), zerando ? 'Zerando…' : 'Zerar dados de demonstração'))),
 
     (novo || editar) && React.createElement(NovoUsuarioModal, { editing: editar, onClose: () => { setNovo(false); setEditar(null); }, onSave: salvar })
   );
