@@ -58,7 +58,7 @@ function NovoUsuarioModal({ onClose, onSave, editing }) {
   );
 }
 
-export default function ViewUsuarios() {
+export default function ViewUsuarios({ currentUserId }) {
   const { corCorretor, refresh } = useRefData();
   const [usuarios, setUsuarios] = useState([]);
   const [novo, setNovo] = useState(false);
@@ -70,6 +70,11 @@ export default function ViewUsuarios() {
   useEffect(() => { const h = () => setNovo(true); window.addEventListener('rl-novo', h); return () => window.removeEventListener('rl-novo', h); }, []);
 
   const toggleStatus = (u) => api.editUsuario(u.id, { status: u.status === 'Ativo' ? 'Inativo' : 'Ativo' }).then(atualizado => { setUsuarios(us => us.map(x => x.id === u.id ? atualizado : x)); refresh(); });
+
+  const excluir = (u) => {
+    if (!window.confirm(`Excluir o usuário "${u.nome}"? Essa ação não pode ser desfeita.`)) return;
+    api.delUsuario(u.id).then(() => { setUsuarios(us => us.filter(x => x.id !== u.id)); refresh(); }).catch(e => alert(e.message));
+  };
 
   const perfilBadge = (p) => ({ 'Administrador': 'b-brand', 'Corretor Sênior': 'b-ok', 'Corretor': 'b-info', 'Marketing': 'b-mag', 'Financeiro': 'b-warn' }[p] || 'b-ink');
   const ativos = usuarios.filter(u => u.status === 'Ativo').length;
@@ -115,7 +120,8 @@ export default function ViewUsuarios() {
             React.createElement('td', { className: 'muted', style: { fontSize: 12 } }, u.ultimo_acesso || 'nunca acessou'),
             React.createElement('td', null, React.createElement('div', { className: 'row', style: { gap: 6 } },
               React.createElement('button', { className: 'btn btn-ghost btn-sm', onClick: () => setEditar(u) }, 'Editar'),
-              React.createElement('button', { className: 'btn btn-ghost btn-sm', onClick: () => toggleStatus(u) }, u.status === 'Ativo' ? 'Desativar' : 'Ativar')))))))
+              React.createElement('button', { className: 'btn btn-ghost btn-sm', onClick: () => toggleStatus(u) }, u.status === 'Ativo' ? 'Desativar' : 'Ativar'),
+              u.id !== currentUserId && React.createElement('button', { className: 'btn btn-ghost btn-sm', style: { color: 'var(--bad)' }, onClick: () => excluir(u) }, 'Excluir')))))))
     ),
 
     React.createElement('div', { className: 'card card-pad', style: { marginTop: 20, background: 'var(--bad-bg)', border: '1px solid #f0c4bd' } },

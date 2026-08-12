@@ -74,3 +74,17 @@ router.put("/:id/senha", authRequired, requireRole("Administrador"), (req, res) 
   logAcao(req, "Redefiniu senha de usuário", "Usuários", u.nome, "edicao");
   res.json({ ok: true });
 });
+
+router.delete("/:id", authRequired, requireRole("Administrador"), (req, res) => {
+  const u = db.prepare(`SELECT * FROM usuarios WHERE id = ?`).get(req.params.id);
+  if (!u) return res.status(404).json({ error: "Usuário não encontrado" });
+  if (u.id === req.user.id) return res.status(400).json({ error: "Você não pode excluir o próprio usuário." });
+  // Desvincula o corretor de qualquer registro existente antes de excluir,
+  // pra não travar em restrição de chave estrangeira.
+  for (const t of ["imoveis", "leads_angariacao", "negocios", "clientes"]) {
+    db.prepare(`UPDATE ${t} SET corretor_id = NULL WHERE corretor_id = ?`).run(u.id);
+  }
+  db.prepare(`DELETE FROM usuarios WHERE id = ?`).run(u.id);
+  logAcao(req, "Excluiu usuário", "Usuários", `${u.nome} · ${u.perfil}`, "exclusao");
+  res.json({ ok: true });
+});

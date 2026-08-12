@@ -97,7 +97,7 @@ function AppShell() {
     financeiro: () => React.createElement(ViewFinanceiro, null),
     relatorios: () => React.createElement(ViewRelatorios, null),
     log: () => React.createElement(ViewLog, null),
-    usuarios: () => React.createElement(ViewUsuarios, null),
+    usuarios: () => React.createElement(ViewUsuarios, { currentUserId: user.id }),
   };
 
   const [t1, t2] = titles[route];

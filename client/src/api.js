@@ -75,6 +75,7 @@ export const api = {
   addUsuario: (body) => request("/usuarios", { method: "POST", body: JSON.stringify(body) }),
   editUsuario: (id, body) => request(`/usuarios/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   setSenha: (id, senha) => request(`/usuarios/${id}/senha`, { method: "PUT", body: JSON.stringify({ senha }) }),
+  delUsuario: (id) => request(`/usuarios/${id}`, { method: "DELETE" }),
 
   zerarDados: () => request("/admin/zerar-dados", { method: "POST" }),
 };
