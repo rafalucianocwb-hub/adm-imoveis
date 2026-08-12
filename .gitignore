@@ -1,0 +1,12 @@
+node_modules/
+
+# builds
+client/dist/
+
+# banco de dados local / segredos
+server/data/*.db
+server/data/*.db-*
+server/.env
+.env
+
+.DS_Store
