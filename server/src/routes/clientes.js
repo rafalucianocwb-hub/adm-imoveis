@@ -49,3 +49,11 @@ router.put("/:id", authRequired, (req, res) => {
   logAcao(req, "Atualizou cliente", "Clientes", `${c.codigo} · ${b.status ?? c.status}`, "edicao");
   res.json(db.prepare(`${SELECT} WHERE c.id = ?`).get(c.id));
 });
+
+router.delete("/:id", authRequired, (req, res) => {
+  const c = db.prepare(`SELECT * FROM clientes WHERE id = ?`).get(req.params.id);
+  if (!c) return res.status(404).json({ error: "Cliente não encontrado" });
+  db.prepare(`DELETE FROM clientes WHERE id = ?`).run(c.id);
+  logAcao(req, "Excluiu cliente", "Clientes", `${c.codigo} · ${c.nome}`, "exclusao");
+  res.json({ ok: true });
+});

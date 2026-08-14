@@ -63,6 +63,11 @@ export default function ViewClientes() {
 
   const abrirSel = (c) => { setSel(c); };
 
+  const excluirCliente = (c) => {
+    if (!window.confirm(`Excluir o cliente "${c.nome}" (${c.codigo})? Essa ação não pode ser desfeita.`)) return;
+    api.delCliente(c.id).then(() => { setClientes(cs => cs.filter(x => x.id !== c.id)); setSel(null); }).catch(e => alert(e.message));
+  };
+
   const exportar = () => exportCSV('clientes_rl_imoveis',
     ['ID', 'Nome', 'Status', 'Imóvel', 'Valor', 'Origem', 'Corretor', 'Telefone', 'E-mail', 'Endereço', 'Último contato'],
     clientes.map(c => [c.codigo, c.nome, c.status, c.imovel_titulo || c.imovel_codigo, c.valor, c.origem, c.corretor_nome, c.telefone, c.email, c.endereco, c.ultimo_contato]));
@@ -114,6 +119,7 @@ export default function ViewClientes() {
     sel && React.createElement(Modal, { title: sel.nome, sub: sel.codigo + ' · cliente desde ' + sel.desde, icon: Ic.users, onClose: () => setSel(null),
       footer: React.createElement(React.Fragment, null,
         React.createElement('button', { className: 'btn btn-ghost', onClick: () => setSel(null) }, 'Fechar'),
+        React.createElement('button', { className: 'btn btn-ghost', style: { color: 'var(--bad)' }, onClick: () => excluirCliente(sel) }, React.createElement(Ic.x, {}), 'Excluir'),
         React.createElement('button', { className: 'btn btn-primary' }, React.createElement(Ic.whats, {}), 'Abrir WhatsApp')) },
       React.createElement('div', { className: 'row', style: { gap: 10, marginBottom: 16 } },
         React.createElement('span', { className: 'badge ' + stBadge(sel.status) }, sel.status),

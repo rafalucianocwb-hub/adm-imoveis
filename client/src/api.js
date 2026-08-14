@@ -33,6 +33,7 @@ export const api = {
   addImovel: (body) => request("/imoveis", { method: "POST", body: JSON.stringify(body) }),
   editImovel: (id, body) => request(`/imoveis/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   avancarFase: (id, fase) => request(`/imoveis/${id}/fase`, { method: "POST", body: JSON.stringify({ fase }) }),
+  delImovel: (id) => request(`/imoveis/${id}`, { method: "DELETE" }),
 
   leadsAngariacao: () => request("/proprietarios"),
   addLeadAngariacao: (body) => request("/proprietarios", { method: "POST", body: JSON.stringify(body) }),
@@ -50,6 +51,7 @@ export const api = {
   clientes: () => request("/clientes"),
   addCliente: (body) => request("/clientes", { method: "POST", body: JSON.stringify(body) }),
   editCliente: (id, body) => request(`/clientes/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+  delCliente: (id) => request(`/clientes/${id}`, { method: "DELETE" }),
 
   contratos: () => request("/contratos"),
   modelosContrato: () => request("/contratos/modelos"),

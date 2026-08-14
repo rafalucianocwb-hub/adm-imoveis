@@ -97,6 +97,12 @@ router.post("/:id/fase", authRequired, (req, res) => {
 router.delete("/:id", authRequired, (req, res) => {
   const im = db.prepare(`SELECT * FROM imoveis WHERE id = ?`).get(req.params.id);
   if (!im) return res.status(404).json({ error: "Imóvel não encontrado" });
+  // Desvincula o imóvel de negócios/clientes/contratos/transações/leads antes de
+  // excluir, pra não travar em restrição de chave estrangeira.
+  for (const t of ["negocios", "clientes", "contratos", "transacoes"]) {
+    db.prepare(`UPDATE ${t} SET imovel_id = NULL WHERE imovel_id = ?`).run(im.id);
+  }
+  db.prepare(`UPDATE leads_angariacao SET enviado_imovel_id = NULL WHERE enviado_imovel_id = ?`).run(im.id);
   db.prepare(`DELETE FROM imoveis WHERE id = ?`).run(im.id);
   logAcao(req, "Excluiu imóvel", "Imóveis", `${im.codigo}`, "exclusao");
   res.json({ ok: true });

@@ -99,7 +99,8 @@ export default function ViewImoveis({ initialId, clearInitial }) {
 
   const faseBadge = (f) => { const done = f >= 8; return React.createElement('span', { className: 'badge ' + (done ? 'b-ok' : f >= 5 ? 'b-info' : 'b-brand') }, FASES[f - 1]); };
 
-  if (sel) return React.createElement(ImovelDetalhe, { im: sel, onBack: () => setSel(null), onChange: (upd) => { setSel(upd); setImoveis(list => list.map(i => i.id === upd.id ? upd : i)); } });
+  if (sel) return React.createElement(ImovelDetalhe, { im: sel, onBack: () => setSel(null), onChange: (upd) => { setSel(upd); setImoveis(list => list.map(i => i.id === upd.id ? upd : i)); },
+    onDelete: () => { setSel(null); setImoveis(list => list.filter(i => i.id !== sel.id)); } });
 
   return React.createElement('div', null,
     React.createElement('div', { className: 'between wrap', style: { marginBottom: 20, gap: 12 } },
@@ -151,11 +152,15 @@ export default function ViewImoveis({ initialId, clearInitial }) {
   );
 }
 
-function ImovelDetalhe({ im, onBack, onChange }) {
+function ImovelDetalhe({ im, onBack, onChange, onDelete }) {
   const [tab, setTab] = useState('processo');
   const comissaoVal = im.preco * im.comissao_pct / 100;
 
   const avancarFase = () => api.avancarFase(im.id).then(onChange);
+  const excluirImovel = () => {
+    if (!window.confirm(`Excluir o imóvel "${im.titulo}" (${im.codigo})? Essa ação não pode ser desfeita.`)) return;
+    api.delImovel(im.id).then(onDelete).catch(e => alert(e.message));
+  };
 
   return React.createElement('div', null,
     React.createElement('button', { className: 'btn btn-ghost btn-sm', style: { marginBottom: 16 }, onClick: onBack },
@@ -184,7 +189,8 @@ function ImovelDetalhe({ im, onBack, onChange }) {
             React.createElement('div', { style: { fontWeight: 700, fontSize: 14, marginTop: 2 } }, React.createElement(Ic.hand, { width: 14, height: 14, style: { verticalAlign: '-2px', marginRight: 4 } }), im.propostas, ' propostas · ', im.favoritos, ' favoritaram'))),
         React.createElement('div', { className: 'row', style: { gap: 9, marginTop: 18 } },
           React.createElement('button', { className: 'btn btn-primary', style: { flex: 1, justifyContent: 'center' } }, React.createElement(Ic.mega, {}), 'Anunciar'),
-          im.fase < 8 && React.createElement('button', { className: 'btn btn-dark', style: { flex: 1, justifyContent: 'center' }, onClick: avancarFase }, React.createElement(Ic.arrow, {}), 'Avançar fase'))
+          im.fase < 8 && React.createElement('button', { className: 'btn btn-dark', style: { flex: 1, justifyContent: 'center' }, onClick: avancarFase }, React.createElement(Ic.arrow, {}), 'Avançar fase')),
+        React.createElement('button', { className: 'btn btn-ghost', style: { width: '100%', justifyContent: 'center', marginTop: 9, color: 'var(--bad)' }, onClick: excluirImovel }, React.createElement(Ic.x, {}), 'Excluir imóvel')
       )),
 
     React.createElement('div', { className: 'tabs' },
