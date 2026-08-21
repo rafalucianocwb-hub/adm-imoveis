@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS imoveis (
   comissao_pct REAL NOT NULL DEFAULT 5,
   fase INTEGER NOT NULL DEFAULT 1,
   foto_url TEXT,
+  foto_url_2 TEXT,
   acessos INTEGER NOT NULL DEFAULT 0,
   propostas INTEGER NOT NULL DEFAULT 0,
   favoritos INTEGER NOT NULL DEFAULT 0,
@@ -205,6 +206,12 @@ CREATE TABLE IF NOT EXISTS contadores (
   valor INTEGER NOT NULL DEFAULT 0
 );
 `);
+
+// Migração leve para bancos já existentes (criados antes desta coluna existir).
+const colunasImoveis = db.prepare(`PRAGMA table_info(imoveis)`).all().map((c) => c.name);
+if (!colunasImoveis.includes("foto_url_2")) {
+  db.exec(`ALTER TABLE imoveis ADD COLUMN foto_url_2 TEXT`);
+}
 
 export function proximoCodigo(prefixo, inicio = 1) {
   const row = db.prepare(`SELECT valor FROM contadores WHERE prefixo = ?`).get(prefixo);

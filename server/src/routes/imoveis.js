@@ -58,12 +58,12 @@ router.post("/", authRequired, (req, res) => {
   const id = randomUUID();
   const codigo = proximoCodigo("RL-", 109);
   db.prepare(
-    `INSERT INTO imoveis (id, codigo, titulo, tipo, bairro, cidade, area, dormitorios, vagas, preco, proprietario_id, corretor_id, exclusivo, comissao_pct, fase, foto_url, matricula, tipo_autorizacao)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    `INSERT INTO imoveis (id, codigo, titulo, tipo, bairro, cidade, area, dormitorios, vagas, preco, proprietario_id, corretor_id, exclusivo, comissao_pct, fase, foto_url, foto_url_2, matricula, tipo_autorizacao)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
   ).run(
     id, codigo, b.titulo.trim(), b.tipo || "Casa", b.bairro || null, b.cidade || "Florianópolis/SC",
     b.area || 0, b.dormitorios || null, b.vagas || 0, b.preco || 0, proprietarioId, corretor?.id || null,
-    b.exclusivo ? 1 : 0, b.comissaoPct || 5, 1, b.fotoUrl || "/assets/urban/casa-padrao.jpg", b.matricula || null,
+    b.exclusivo ? 1 : 0, b.comissaoPct || 5, 1, b.fotoUrl || "/assets/urban/casa-padrao.jpg", b.fotoUrl2 || null, b.matricula || null,
     b.exclusivo ? "Exclusivo" : "Compartilhado"
   );
   logAcao(req, "Criou imóvel", "Imóveis", `${codigo} · ${b.titulo.trim()}`, "criacao");
@@ -75,11 +75,11 @@ router.put("/:id", authRequired, (req, res) => {
   if (!im) return res.status(404).json({ error: "Imóvel não encontrado" });
   const b = req.body || {};
   db.prepare(
-    `UPDATE imoveis SET titulo=?, tipo=?, bairro=?, area=?, dormitorios=?, vagas=?, preco=?, exclusivo=?, comissao_pct=?, matricula=? WHERE id=?`
+    `UPDATE imoveis SET titulo=?, tipo=?, bairro=?, area=?, dormitorios=?, vagas=?, preco=?, exclusivo=?, comissao_pct=?, matricula=?, foto_url=?, foto_url_2=? WHERE id=?`
   ).run(
     b.titulo ?? im.titulo, b.tipo ?? im.tipo, b.bairro ?? im.bairro, b.area ?? im.area, b.dormitorios ?? im.dormitorios,
     b.vagas ?? im.vagas, b.preco ?? im.preco, b.exclusivo != null ? (b.exclusivo ? 1 : 0) : im.exclusivo,
-    b.comissaoPct ?? im.comissao_pct, b.matricula ?? im.matricula, im.id
+    b.comissaoPct ?? im.comissao_pct, b.matricula ?? im.matricula, b.fotoUrl ?? im.foto_url, b.fotoUrl2 ?? im.foto_url_2, im.id
   );
   logAcao(req, "Editou imóvel", "Imóveis", `${im.codigo}`, "edicao");
   res.json(withCounts(db.prepare(`${SELECT} WHERE i.id = ?`).get(im.id)));

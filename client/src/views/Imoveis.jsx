@@ -12,9 +12,22 @@ function AngariarImovelModal({ onClose, onSave, corretores }) {
     titulo: '', tipo: 'Casa', bairro: '', cidade: 'Florianópolis/SC', area: '', dorm: '', vagas: '', preco: '', comissao: '6', exclusivo: 'Exclusivo', foto: FOTOS[0],
     proprietario: '', tel: '', email: '', corretor: corretores[0]?.nome || '', matricula: '', obs: ''
   });
+  const [fotosReais, setFotosReais] = useState([null, null]);
+  const [enviandoFoto, setEnviandoFoto] = useState([false, false]);
   const [erro, setErro] = useState('');
   const set = (k) => (e) => setF(s => ({ ...s, [k]: e.target.value }));
   const campo = (label, el, hint) => React.createElement('div', { className: 'field' }, React.createElement('label', null, label), el, hint && React.createElement('div', { className: 'muted', style: { fontSize: 11, marginTop: 4 } }, hint));
+
+  const enviarFoto = (idx) => (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEnviandoFoto(s => s.map((v, i) => i === idx ? true : v));
+    setErro('');
+    api.uploadFoto(file)
+      .then(({ url }) => setFotosReais(s => s.map((v, i) => i === idx ? url : v)))
+      .catch(err => setErro(err.message))
+      .finally(() => setEnviandoFoto(s => s.map((v, i) => i === idx ? false : v)));
+  };
 
   const salvar = () => {
     if (!f.titulo.trim()) { setErro('Informe o título/anúncio do imóvel.'); setStep(1); return; }
@@ -25,7 +38,7 @@ function AngariarImovelModal({ onClose, onSave, corretores }) {
       area: parseInt(f.area) || 0, dormitorios: f.dorm ? parseInt(f.dorm) : null, vagas: parseInt(f.vagas) || 0,
       preco: Math.round(preco), proprietarioNome: f.proprietario.trim(), proprietarioTel: f.tel, proprietarioEmail: f.email,
       corretorNome: f.corretor, exclusivo: f.exclusivo === 'Exclusivo', comissaoPct: parseFloat(f.comissao) || 5,
-      fotoUrl: f.foto, matricula: f.matricula,
+      fotoUrl: fotosReais[0] || f.foto, fotoUrl2: fotosReais[1] || null, matricula: f.matricula,
     });
   };
 
@@ -62,10 +75,24 @@ function AngariarImovelModal({ onClose, onSave, corretores }) {
       React.createElement('div', { className: 'grid', style: { gridTemplateColumns: '1fr 1fr', gap: '0 14px' } },
         campo('Tipo de autorização', React.createElement('select', { value: f.exclusivo, onChange: set('exclusivo') }, ['Exclusivo', 'Compartilhado'].map(t => React.createElement('option', { key: t }, t)))),
         campo('Matrícula do imóvel', React.createElement('input', { value: f.matricula, onChange: set('matricula'), placeholder: 'Nº da matrícula / cartório' }))),
-      campo('Imagem de capa', React.createElement('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+      campo('Imagem de capa (usada se nenhuma foto real for enviada)', React.createElement('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
         FOTOS.map(src => React.createElement('button', { key: src, onClick: () => setF(s => ({ ...s, foto: src })),
           style: { padding: 0, border: f.foto === src ? '2px solid var(--brand)' : '2px solid transparent', borderRadius: 9, overflow: 'hidden', lineHeight: 0, boxShadow: f.foto === src ? '0 0 0 2px var(--brand-soft)' : 'none' } },
-          React.createElement('img', { src, style: { width: 62, height: 46, objectFit: 'cover', display: 'block' } }))))) ),
+          React.createElement('img', { src, style: { width: 62, height: 46, objectFit: 'cover', display: 'block' } }))))),
+
+      campo('Fotos reais do imóvel (opcional, até 2)', React.createElement('div', { className: 'row', style: { gap: 12 } },
+        [0, 1].map(idx => {
+          const slotStyle = { display: 'grid', placeItems: 'center', width: 100, height: 76, borderRadius: 9, cursor: 'pointer', overflow: 'hidden',
+            border: fotosReais[idx] ? '2px solid var(--brand)' : '2px dashed var(--line)', background: 'var(--surface-2)' };
+          const conteudo = enviandoFoto[idx]
+            ? React.createElement('span', { className: 'muted', style: { fontSize: 11 } }, 'Enviando…')
+            : fotosReais[idx]
+              ? React.createElement('img', { src: fotosReais[idx], style: { width: '100%', height: '100%', objectFit: 'cover' } })
+              : React.createElement('span', { className: 'muted', style: { fontSize: 20 } }, '+');
+          return React.createElement('label', { key: idx, style: slotStyle },
+            React.createElement('input', { type: 'file', accept: 'image/*', style: { display: 'none' }, onChange: enviarFoto(idx) }),
+            conteudo);
+        })), 'JPEG, PNG ou WEBP · até 8MB cada.') ),
 
     step === 2 && React.createElement('div', null,
       React.createElement('div', { className: 'grid', style: { gridTemplateColumns: '1fr 1fr', gap: '0 14px' } },
@@ -172,7 +199,8 @@ function ImovelDetalhe({ im, onBack, onChange, onDelete }) {
           React.createElement('img', { src: im.foto_url, style: { width: '100%', height: '100%', objectFit: 'cover' } }),
           React.createElement('div', { style: { position: 'absolute', top: 14, left: 14, display: 'flex', gap: 7 } },
             im.exclusivo && React.createElement('span', { className: 'badge b-brand' }, React.createElement(Ic.lock, { width: 11, height: 11 }), 'Exclusivo'),
-            React.createElement('span', { className: 'badge', style: { background: 'rgba(27,33,30,.82)', color: '#fff' } }, im.tipo)))),
+            React.createElement('span', { className: 'badge', style: { background: 'rgba(27,33,30,.82)', color: '#fff' } }, im.tipo)),
+          im.foto_url_2 && React.createElement('img', { src: im.foto_url_2, style: { position: 'absolute', bottom: 12, right: 12, width: 84, height: 64, objectFit: 'cover', borderRadius: 8, border: '2px solid #fff', boxShadow: 'var(--shadow-md)' } }))),
       React.createElement('div', { className: 'card card-pad' },
         React.createElement('div', { className: 'muted', style: { fontSize: 12, fontWeight: 700 } }, im.codigo, ' · ', im.tipo),
         React.createElement('h2', { style: { fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, margin: '4px 0 8px', lineHeight: 1.15 } }, im.titulo),

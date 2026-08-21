@@ -18,7 +18,9 @@ import { router as relatoriosRouter } from "./routes/relatorios.js";
 import { router as logRouter } from "./routes/log.js";
 import { router as usuariosRouter } from "./routes/usuarios.js";
 import { router as adminRouter } from "./routes/admin.js";
+import { router as uploadsRouter } from "./routes/uploads.js";
 import { db } from "./db.js";
+import { uploadsDir } from "./paths.js";
 
 // Primeiro boot num banco vazio (ex.: volume novo no Railway) — popula
 // automaticamente com os dados de demonstração. Nunca roda se já houver
@@ -45,6 +47,8 @@ app.use("/api/relatorios", relatoriosRouter);
 app.use("/api/log", logRouter);
 app.use("/api/usuarios", usuariosRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/uploads", uploadsRouter);
+app.use("/uploads", express.static(uploadsDir));
 
 // Em produção, o build do frontend (client/dist) é servido pelo próprio
 // Express, como um único serviço — não precisa de um servidor separado.

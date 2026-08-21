@@ -34,6 +34,7 @@ export const api = {
   editImovel: (id, body) => request(`/imoveis/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   avancarFase: (id, fase) => request(`/imoveis/${id}/fase`, { method: "POST", body: JSON.stringify({ fase }) }),
   delImovel: (id) => request(`/imoveis/${id}`, { method: "DELETE" }),
+  uploadFoto: (file) => { const fd = new FormData(); fd.append("foto", file); return request("/uploads", { method: "POST", body: fd }); },
 
   leadsAngariacao: () => request("/proprietarios"),
   addLeadAngariacao: (body) => request("/proprietarios", { method: "POST", body: JSON.stringify(body) }),
