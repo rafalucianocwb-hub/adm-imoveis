@@ -3,9 +3,10 @@ node_modules/
 # builds
 client/dist/
 
-# banco de dados local / segredos
+# banco de dados local / segredos / fotos enviadas localmente
 server/data/*.db
 server/data/*.db-*
+server/data/uploads/
 server/.env
 .env
 
